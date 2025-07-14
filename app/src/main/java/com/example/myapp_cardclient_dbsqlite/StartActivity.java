@@ -3,11 +3,13 @@ package com.example.myapp_cardclient_dbsqlite;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.myapp_cardclient_dbsqlite.storage.User;
+import com.example.myapp_cardclient_dbsqlite.storage.UserResponce;
 import com.example.myapp_cardclient_dbsqlite.storage.UsersApi;
 
 import java.util.List;
@@ -20,12 +22,11 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class StartActivity extends AppCompatActivity {
-    private static final int START_DELAY = 5000; // 5 секунд
+    private static final int START_DELAY = 15000; // 5 секунд
 
     private static final String BASE_URL = "https://jsonplaceholder.typicode.com/";
     TextView textView;
-    TextView textView1;
-    TextView textView2;
+    LinearLayout container;
     UsersApi usersApi;
 
     @Override
@@ -33,8 +34,7 @@ public class StartActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
         textView = findViewById(R.id.textResult);
-        textView1 = findViewById(R.id.textResult1);
-        textView2 = findViewById(R.id.textResult2);
+        container = findViewById(R.id.usersContainer);
 
 
         Retrofit retrofit = new Retrofit.Builder()
@@ -60,37 +60,83 @@ public class StartActivity extends AppCompatActivity {
             public void onResponse(Call<List<User>> call,
                                    Response<List<User>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<User> usersResponce = response.body();
-                    if (!usersResponce.isEmpty()) {
-                        User user = null;
-                        user = usersResponce.get(0);
-                        String result = "Пользователь ID: " + user.id + "\n" +
-                                "Имя: " + user.name + "\n" +
-                                "Email: " + user.email + "\n" +
-                                "Телефон: " + user.phoneNumber + "\n";
-                        textView.setText(result);
-                        user = usersResponce.get(1);
-                        String result1 = "Пользователь ID: " + user.id + "\n" +
-                                "Имя: " + user.name + "\n" +
-                                "Email: " + user.email + "\n" +
-                                "Телефон: " + user.phoneNumber + "\n";
-                        textView1.setText(result1);
-                        user = usersResponce.get(2);
-                        String result2 = "Пользователь ID: " + user.id + "\n" +
-                                "Имя: " + user.name + "\n" +
-                                "Email: " + user.email + "\n" +
-                                "Телефон: " + user.phoneNumber + "\n";
-                        textView2.setText(result2);
+                    UserResponce usersResponce = new UserResponce(response.body());
+                    if (!usersResponce.getUsers().isEmpty() && usersResponce.getUsers() != null) {
+                        displayUserData(usersResponce.getUsers());
                     }
                 } else {
-                    textView1.setText("Клиенты не найдены");
+                    textView.setText("Клиенты не найдены");
                 }
             }
 
             @Override
             public void onFailure(Call<List<User>> call, Throwable t) {
-                textView1.setText("Error " + t.getMessage());
+                textView.setText("Error " + t.getMessage());
             }
         });
     }
+
+    private void displayUserData(List<User> users) {
+        container.removeAllViews();
+        for (User user : users) {
+            textView = new TextView(this);
+            String userInfo = String.format(
+                    "Пользователь ID: %s\nИмя: %s\nEmail: %s\nТелефон: %s\n",
+                    user.id, user.name, user.email, user.phoneNumber
+            );
+            textView.setPadding(0, 8, 0, 16);
+            textView.setText(userInfo);
+            container.addView(textView);
+        }
+    }
+
+//    private void displayUserData(List<User> users) {
+//
+//        int usersSize = Math.min(users.size(), 3);
+//        for (int i = 0; i < usersSize; i++) {
+//            User user = users.get(i);
+//            String userInfo = String.format(
+//                    "Пользователь ID: %s\nИмя: %s\nEmail: %s\nТелефон: %s\n",
+//                    user.id, user.name, user.email, user.phoneNumber
+//            );
+//
+//            switch (i) {
+//                case 0:
+//                    textView.setText(userInfo);
+//                    break;
+//
+//                case 1:
+//                    textView1.setText(userInfo);
+//                    break;
+//
+//                case 2:
+//                    textView2.setText(userInfo);
+//                    break;
+//            }
+//        }
+//    }
+
+
+//    private void displayUsersData(List<User> users) {
+//        User user = null;
+//        user = users.get(0);
+//        String result = "Пользователь ID: " + user.id + "\n" +
+//                "Имя: " + user.name + "\n" +
+//                "Email: " + user.email + "\n" +
+//                "Телефон: " + user.phoneNumber + "\n";
+//        textView.setText(result);
+//        user = users.get(1);
+//        String result1 = "Пользователь ID: " + user.id + "\n" +
+//                "Имя: " + user.name + "\n" +
+//                "Email: " + user.email + "\n" +
+//                "Телефон: " + user.phoneNumber + "\n";
+//        textView1.setText(result1);
+//        user = users.get(2);
+//        String result2 = "Пользователь ID: " + user.id + "\n" +
+//                "Имя: " + user.name + "\n" +
+//                "Email: " + user.email + "\n" +
+//                "Телефон: " + user.phoneNumber + "\n";
+//        textView2.setText(result2);
+//    }
 }
+
